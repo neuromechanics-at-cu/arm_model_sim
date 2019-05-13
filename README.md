@@ -6,6 +6,9 @@ This  code will allow users to quickly and easily run a simulation of a two link
 </p>
 
 # Main files
+## Example.m
+A short file that shows what inputs to specify with the model and how to call the model using the funciton single_sim.m
+
 ## single_sim.m
 The main function is single_sim.m. Call this function with the inputs specified and it will run the single arm reaching simulation.
 
