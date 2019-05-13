@@ -1,0 +1,138 @@
+input.added_mass = 0;
+
+input.subj_mass = 60; % in kg
+input.subj_height = 150; % in cm
+input.thetaE_start = 1.7; % in rad
+input.thetaS_start = .7; % in rad
+input.movedur = 1;
+
+time_step = .0050;
+input.normforce = 200E4;
+
+t_act= 0.05;%.0050;
+t_deact = 0.066;%.066;
+
+fold = pwd;
+% load('Resamp_data_gb2.mat');
+
+fprintf('Processing %s \n',filename);
+% clearvars -except time_step target_str input_normforce masses minparams L Resamp tic fold minfail rnjesus
+
+
+upperarm_mass = 0.028*input.subj_mass;
+lowerarm_mass = 0.022*input.subj_mass;
+upperarm_length = (0.825-0.632)*input.subj_height;
+lowerarm_length = (0.632-0.425)*input.subj_height;
+upperarm_lcom = 0.436*input.uppearm_length;
+lowerarm_lcom = 0.682*input.lowerarm_length;
+
+vars.masses = input.added_mass;
+vars.rnjesus = 0;
+vars.time_inc = 0.0050;
+vars.speeds = input.movedur; % Movement Duration
+vars.norm_force = input.normforce;
+vars.minparam = 'stress';
+vars.L = 2;
+
+% http://www.kdm.p.lodz.pl/articles/2017/3/21_3_4.pdf
+% https://www.ele.uri.edu/faculty/vetter/BME207/anthropometric-data.pdf
+forearm.mass = 0.022*input.subj_mass;%;+2*vars{c,subj,s,t}.masses(c);
+forearm.length = (0.632-0.425)*input.subj_height; % meters, taken from An iterative optimal control and estimation design for nonlinear stochastic system
+forearm.l_com = 0.682*forearm.length;
+
+forearm.l_com = (.417*(.632-.480)*input.subj_height*.016*input.subj_mass +...
+        ((.632-.480)*input.subj_height+.515*((.480-.370)/2)*input.subj_height)*.006*input.subj_mass)/...
+        (.016*input.subj_mass+.006*input.subj_mass); % Using Enoka
+    
+[forearm] = calc_forearmI(forearm,vars.masses);
+
+upperarm.length = (0.825-0.632)*input.subj_height; % meters
+upperarm.l_com = 0.436*upperarm.length;
+upperarm.centl = 0.436*upperarm.length;
+upperarm.mass = 0.028*input.subj_mass; %kg
+upperarm.Ic = .0141;
+
+shoulder = [];
+elbow = [];
+theta = [];
+
+ro = [-.0758,0.4878];
+vars.target = [0,.1];
+
+
+rf = [vars.target(1)+ro(1),...
+    vars.target(2)+ro(2)];
+
+% If you have resampled data to simulate, use Gen_mvt_gb. Otherwise just
+% use the minimum jerk.
+% [Data] = Gen_mvt_gb(Resamp,c,subj,s,t,ro,rf,vars{c,subj,s,t}.time_inc);
+
+Data = minjerk(ro,rf,vars.speeds,vars.time_inc);
+
+Data.targetposition(1)=vars.targets.(target_str{t})(1)*vars{c,subj,s,t}.distances(d)/.1+ro(1);
+Data.targetposition(2)=varsj,s,t}.targets.(target_str{t})(2)*vars{c,subj,s,t}.distances(d)/.1+ro(2);
+
+Data{c,subj,s,t}.startposition = ro;
+
+vars{c,subj,s,t}.masses;
+
+parfor_progress(4*8*7*8);
+parfor i=1:4*8*7*8
+    [c,subj,s,t] = ind2sub([4,8,7,8],i);
+    if isempty(Data{c,subj,s,t})
+        continue
+    end
+    [ shoulder1{i},elbow1{i},theta1{i},muscles1{i},act1{i},u1{i},est1{i},tnew1{i}, energy1{i}, eff_mass1{i} ] =...
+        looper2(Data{c,subj,s,t}, forearm{c,subj,s,t}, upperarm{c,subj,s,t},vars{c,subj,s,t},time_step,c,subj,s,t);
+    parfor_progress;
+end
+parfor_progress(0);
+
+for i =1:4*8*7*8
+   
+    [c,subj,s,t] = ind2sub([4,8,7,8],i);
+    
+    shoulder{c,subj,s,t} = shoulder1{i};
+    elbow{c,subj,s,t} = elbow1{i};
+    theta{c,subj,s,t} = theta1{i};
+    eff_mass{c,subj,s,t} = eff_mass1{i};
+    muscles{c,subj,s,t} = muscles1{i};
+    act{c,subj,s,t} = act1{i};
+    u{c,subj,s,t} = u1{i};
+    est{c,subj,s,t} = est1{i};
+    tnew{c,subj,s,t} = tnew1{i};
+    energy{c,subj,s,t} = energy1{i};
+    
+    shoulder1{i} = [];
+    elbow1{i} = [];
+    theta1{i} = [];
+    eff_mass1{i} = []; 
+    muscles1{i} = [];
+    act1{i} = [];
+    u1{i} = [];
+    est1{i} = [];
+    tnew1{i} = [];
+    energy1{i} = [];
+    
+end
+% Checkers_test;
+clear shoulder1 elbow1 theta1 muscles1 act1 est1 tnew1
+
+toc
+% fprintf('aa_%scost_01-21-2019',  minparams{L});
+if exist('rnjesus');
+    if rnjesus
+        filename = sprintf('aa_%scost_01-21-2019_rng',  minparams{L});
+    else
+        filename = sprintf('aa_%scost_01-21-2019',  minparams{L});
+    end
+else
+    filename = sprintf('aa_%scost_01-21-2019_rng',  minparams{L});
+end
+
+save(filename);
+if exist(strcat(filename,'.mat'),'file')==2
+    fprintf('Complete. Saved as: %s\n',filename');
+end 
+
+% end
