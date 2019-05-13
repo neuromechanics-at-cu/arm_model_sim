@@ -6,7 +6,7 @@ This  code will allow users to quickly and easily run a simulation of a two link
 </p>
 
 # Main files
-
+## single_sim.m
 The main function is single_sim.m. Call this function with the inputs specified and it will run the single arm reaching simulation.
 
 ### Inputs
@@ -16,3 +16,16 @@ The main function is single_sim.m. Call this function with the inputs specified 
 4. Movment duration of the sim. (input.movedur)
 5. Normalized force parameter in Pa. (input.normforce)
 6. NEED TO ADD START AND TARGET INPUT (future update).
+
+### Outputs
+This function returns all the computed variable in one data structure.
+1. shoulder - Shoulder torques
+2. elbow - Elbow torques
+3. theta - Shoulder and elbow angles
+4. muscles - Muscle forces/stress
+5. act - Muscle Activations
+6. u - Neural Drive to those muscles
+7. est - Estimated active state from u, used for checking.
+8. tnew - New time array that goes with est.
+9. energy - Energetics estimates
+10. eff_mass - Effective mass array.
