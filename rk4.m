@@ -1,11 +1,12 @@
-function [ out ] = rk4( act_state , drive, time_step, varargin )
-    
+%% find_min_max_state.m
+% Created by: Gary Bruening
+% Edited:     5-13-2019
+% 
+% Runge-Kutta ODE solver to determine activation states.
 
-    
+function [ out ] = rk4( act_state , drive, time_step, varargin )    
 t_act = .050;%0.01;
 t_deact = .066;%0.04;
-%     global t_act
-%     global t_deact
 
 step_size = .001;
 h = step_size;

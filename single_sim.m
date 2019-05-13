@@ -1,33 +1,42 @@
-input.added_mass = 0;
+%% single_sim
+% Created by: Gary Bruening
+% Edited:     5-13-2019
+% 
+% This funciton takes in some basic inputs and then simulated a reaching
+% movement using inverse dynamics and an 8 muscle model. More details and
+% full derivations can be found
+% https://gbruening.github.io/projects/arm_model.
+% 
+% The input variable needs to have 5 components:
+%   1. Mass added at the hand in kg. (input.added_mass)
+%   2. Subject mass in kj. (input.subj_mass)
+%   3. Subject height in m. (input.subj_height)
+%   4. Movment duration of the sim. (input.movedur)
+%   5. Normalized force parameter in Pa. (input.normforce)
+%   6. NEED TO ADD START AND TARGET INPUT
+% 
+% This code utalizes a minimization function of neural drive squared for 
+% determining muscle forces. This can be changed by the variable 
+% vars.minparam. Options are:
+%   'umberger''stress','force','act','drive','stress2','force2','act2','drive2'
+% 
+% Most variables are set at the beginning of the function, some are
+% determined within the sub functions. The time_inc function can be reduced
+% if you want a higher resolution sim, but it shouldn't be neccesary and
+% may break fmincon in the time increment is to low.
 
-input.subj_mass = 60; % in kg
-input.subj_height = 1.50; % in m
-input.thetaE_start = 1.7; % in rad
-input.thetaS_start = .7; % in rad
-input.movedur = 1;
+%%
+function [out] = single_sim(input)
 
-time_step = .0050;
-input.normforce = 200E4;
-
-t_act= 0.05;%.0050;
-t_deact = 0.066;%.066;
-
-fold = pwd;
-% load('Resamp_data_gb2.mat');
-
-% fprintf('Processing %s \n',filename);
-% clearvars -except time_step target_str input_normforce masses minparams L Resamp tic fold minfail rnjesus
-
+% Initialize some variables. 
 vars.masses = input.added_mass;
 vars.rnjesus = 0;
 vars.time_inc = 0.0050;
 vars.speeds = input.movedur; % Movement Duration
 vars.norm_force = input.normforce;
-vars.minparam = 'stress';
-vars.L = 2;
+vars.minparam = 'drive2';
 
-% http://www.kdm.p.lodz.pl/articles/2017/3/21_3_4.pdf
-% https://www.ele.uri.edu/faculty/vetter/BME207/anthropometric-data.pdf
+% Create the arm segments.
 forearm.mass = 0.022*input.subj_mass;%;+2*vars{c,subj,s,t}.masses(c);
 forearm.length = (0.632-0.425)*input.subj_height; % meters, taken from An iterative optimal control and estimation design for nonlinear stochastic system
 forearm.l_com = 0.682*forearm.length;
@@ -48,6 +57,7 @@ shoulder = [];
 elbow = [];
 theta = [];
 
+% Define the target spots.
 ro = [-.0758,0.4878];
 vars.target = [0,.1];
 rf = [vars.target(1)+ro(1),...
@@ -57,40 +67,12 @@ rf = [vars.target(1)+ro(1),...
 % use the minimum jerk.
 % [Data] = Gen_mvt_gb(Resamp,c,subj,s,t,ro,rf,vars{c,subj,s,t}.time_inc);
 
+% Create movement trajectory using minimum jerk.
 Data = minjerk(ro,rf,vars.speeds,vars.time_inc);
 Data.targetposition = rf;
 Data.startposition  = ro;
 
-[shoulder,...
-    elbow,...
-    theta,...
-    muscles,...
-    act,...
-    u,...
-    est,...
-    tnew,...
-    energy,...
-    eff_mass] =...
-    looper2(Data,...
-            forearm,...
-            upperarm,...
-            vars);
-% 
-% toc
-% % fprintf('aa_%scost_01-21-2019',  minparams{L});
-% if exist('rnjesus');
-%     if rnjesus
-%         filename = sprintf('aa_%scost_01-21-2019_rng',  minparams{L});
-%     else
-%         filename = sprintf('aa_%scost_01-21-2019',  minparams{L});
-%     end
-% else
-%     filename = sprintf('aa_%scost_01-21-2019_rng',  minparams{L});
-% end
-% 
-% save(filename);
-% if exist(strcat(filename,'.mat'),'file')==2
-%     fprintf('Complete. Saved as: %s\n',filename');
-% end 
-% 
-% % end
+% Simulate
+out = looper2(Data,forearm,upperarm,vars);
+
+end

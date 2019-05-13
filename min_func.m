@@ -1,3 +1,11 @@
+%% compute_min_cost.m
+% Created by: Gary Bruening
+% Edited:     5-13-2019
+% 
+% Primary minimization function. Returns the output variable to minimize
+% when simulating reaches. Stress is the fastest, with energy being the
+% slowest computation time wise.
+
 function [output] = min_func(x,muscles,act,vars,ii,Aeq,beq)
 
 if  isa(act,'struct')
@@ -7,7 +15,9 @@ end
 
 muscle_nums = {'an','bs','br','da','dp','pc','bb','tb'};
 
-time_step = .0025;
+time_step = vars.time_inc;
+
+% Stress
 output_stress = sum(x);
 output_stress2 = sum(x.^2);
 
@@ -20,6 +30,7 @@ switch vars.minparam
         return
 end
 
+% Muscle Force
 muscles.an.force(ii,1) = x(1)*muscles.an.pcsa;
 muscles.bs.force(ii,1) = x(2)*muscles.bs.pcsa;
 muscles.br.force(ii,1) = x(3)*muscles.br.pcsa;
@@ -49,6 +60,7 @@ switch vars.minparam
         return
 end
 
+% Muscle Activation
 norm_force = vars.norm_force; %31.8E4
 for k=1:length(muscle_nums)
     norm_length = muscles.(muscle_nums{k}).length(ii)/muscles.(muscle_nums{k}).l0;
@@ -79,6 +91,7 @@ t_deact = 0.066;%.066;
 sig = 0;
 eps = 0;
 
+% Muscle Neural Drive
 for k=1:length(muscle_nums)
     if ii==1
 
@@ -119,7 +132,7 @@ switch vars.minparam
         return
 end
 
-
+% Energy
 for k=1:length(muscle_nums)
     [energy(k),total] = umberger2(muscles.(muscle_nums{k}),act.(muscle_nums{k})(ii),drive(k));
 end

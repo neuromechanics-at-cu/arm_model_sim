@@ -1,3 +1,16 @@
+%% compute_min_cost.m
+% Created by: Gary Bruening
+% Edited:     5-13-2019
+% 
+% Should probably rename it.
+% The main function that iterates through time to simulated the arm
+% reaching motion using muscle actuators.
+% 
+% It will attempt the minimization mutliple times, and if it completely
+% fails it will error out. Usually this occurs at the beginning of
+% movements when the torque rate is to high for the muscles to achieve. 
+
+%%
 function [ muscles , act , u , est , tnew] = compute_min_cost...
     ( shoulder,elbow,theta,upperarm,forearm,vars)
 format long
@@ -6,6 +19,7 @@ failed = 0;
 muscle_nums = {'an','bs','br','da','dp','pc','bb','tb'};
 [ muscles ] = calc_muscle_initvars(upperarm,forearm,theta,vars);
 for ii = 1:length(shoulder.torque)
+    
     % Create elbow m_arm*pcsa matrix
     A1(:,ii) = [muscles.an.m_arm_e(ii)*muscles.an.pcsa,...
         muscles.bs.m_arm_e(ii)*muscles.bs.pcsa,...
@@ -36,15 +50,11 @@ for ii = 1:length(shoulder.torque)
     s_tor_pas = sum(squeeze(A2(:,ii))'.*fp);
     
     % Create constraint matrix
-%     if ii==1;
-%         beq(:,ii) = [elbow.torque(ii);shoulder.torque(ii)]*mult^1;
-%     else
-        beq(:,ii) = [elbow.torque(ii)+e_tor_pas;shoulder.torque(ii)+s_tor_pas];
-%     end
+    beq(:,ii) = [elbow.torque(ii)+e_tor_pas;shoulder.torque(ii)+s_tor_pas];
+    
+    % Flip stresses if needed. Occurs at high activations when minimum
+    % force may be higher than maximum because of negatives.
     if ii >1
-        if ii == 78;
-            1;
-        end
         for k = 1:length(stress_min(ii-1,:))
             if stress_min(ii-1,k)>stress_max(ii-1,k) &&...
                     stress_min(ii-1,k)<=0 &&...
@@ -57,6 +67,7 @@ for ii = 1:length(shoulder.torque)
         end
     end
     
+    % Define minimum and maximum values.
     if ii>1
         mini = stress_min(ii-1,:);
         maxi = stress_max(ii-1,:);
@@ -66,7 +77,8 @@ for ii = 1:length(shoulder.torque)
     if sum(mini>maxi)>=1
         1;
     end
-    
+
+% Error checks.
 if ~(beq(1,ii) > 0 && beq(1,ii) > A1(:,ii)'*[0,maxi(2),maxi(3),0,0,0,maxi(7),0]')...
             && ~(beq(1,ii) < 0 && beq(1,ii) < A1(:,ii)'*[maxi(1),0,0,0,0,0,0,maxi(8)]')...
             && ~(beq(2,ii) > 0 && beq(2,ii) > A2(:,ii)'*[0,0,0,maxi(4),0,maxi(6),maxi(7),0]')...
@@ -77,7 +89,8 @@ else
     init_guess = maxi*.95;
     stress_check = 1;
 end
-        
+    
+    % Define muscle pcsa matrix
     pcsa = [muscles.an.pcsa,muscles.bs.pcsa,muscles.br.pcsa,...
         muscles.da.pcsa,muscles.dp.pcsa,muscles.pc.pcsa,...
         muscles.bb.pcsa,muscles.tb.pcsa];
@@ -87,9 +100,9 @@ end
     else
         minfunc2 = @(x) min_func(x,muscles,act,vars,ii,Aeq,beq);
     end
+    
     % Find min with constraints
     options = optimoptions('fmincon','Display','off','Algorithm','sqp');%,'MaxIterations',100);
-    
     if ii==1
         init_guess = [1;1;1;1;1;1;1;1];
     else
@@ -99,6 +112,8 @@ end
         init_guess = (maxi-(maxi-mini).*rand(1,8)*.15)';
     end
     clear FVAL EXITFLAG
+    % You can add to the sim that it does random starts, but it doesn't
+    % seem to change the data.
     if isfield(vars,'rnjesus')
         if vars.rnjesus
             if vars.L>=8
@@ -112,20 +127,16 @@ end
     else
         n_mins = 1;
     end
+    % You can change n_mins for the random starts.
     for p = 1:n_mins
         if ii == 1
             [x_temp(:,p),FVAL(p),EXITFLAG(p),OUTPUT,LAMBDA]=...
                 fmincon(@(x) minfunc2(x),[1,1,1,1,1,1,1,1],[],[],...
                 Aeq,beq(:,ii),mini,maxi,[],options);
         else
-            if ii == 76;
-                1;
-            end
-            %Vary initial guess slightly
-            options = optimoptions('fmincon','Display','off','Algorithm','sqp');%,...
-%                 'MaxIterations',100,'Display','iter');
-%             intg = mini + (maxi-mini).*betarnd(1,100,[1,8]);
-%             intg = mini.*(1+betarnd(1,50,[1,8]));
+            % Start the guess near the minimum for each muscle, seems to
+            % get pretty close to the minimums from using random starts.
+            options = optimoptions('fmincon','Display','off','Algorithm','sqp');
             intg = mini.*1.01;
             if isfield(vars,'rnjesus')
                 if vars.rnjesus
@@ -163,10 +174,13 @@ end
         end    
         n=0;
     end
+    
+    % Select the minimization with FVAL the lowest.
     [a,b]=min(FVAL);
     min(FVAL);
     x(:,ii) = x_temp(:,b);
-
+    
+    % Determine the force of each muscle.
     muscles.an.force(ii,1) = x(1,ii)*muscles.an.pcsa;
     muscles.bs.force(ii,1) = x(2,ii)*muscles.bs.pcsa;
     muscles.br.force(ii,1) = x(3,ii)*muscles.br.pcsa;
@@ -176,19 +190,25 @@ end
     muscles.bb.force(ii,1) = x(7,ii)*muscles.bb.pcsa;
     muscles.tb.force(ii,1) = x(8,ii)*muscles.tb.pcsa;
     
-    min_force = 1E-10;
-    for k=1:length(muscle_nums)
-        if muscles.(muscle_nums{k}).force(ii) < min_force
-            muscles.(muscle_nums{k}).force(ii) = 0;
-        end
-    end
+    % Legacy Code, if you want to remove negative passive force uncomment
+    % this.
+%     min_force = 1E-10;
+%     for k=1:length(muscle_nums)
+%         if muscles.(muscle_nums{k}).force(ii) < min_force
+%             muscles.(muscle_nums{k}).force(ii) = 0;
+%         end
+%     end
     
+    % Calculate activation of each muscle.
     norm_force = vars.norm_force; %31.8E4
     for k=1:length(muscle_nums)
         n_f = muscles.(muscle_nums{k}).force(ii)/(norm_force*muscles.(muscle_nums{k}).pcsa);            
         act.(muscle_nums{k})(ii) = Fl_Fv_inv(muscles.(muscle_nums{k}).norm_length(ii)...
             ,muscles.(muscle_nums{k}).v(ii),n_f);
     end
+    
+    % Calculate the minimum and maximum activation stae for the next time
+    % point. This is used to create the constraint matrices.
     if ii < length(shoulder.torque)
         for k=1:length(muscle_nums)
             [ min1(ii,k) , max1(ii,k) ] = find_minmax_state( act.(muscle_nums{k})(ii), vars.time_inc );            
@@ -196,21 +216,15 @@ end
             [ T ] = Fl_Fv_for(muscles.(muscle_nums{k}).norm_length(ii+1)...
                 ,muscles.(muscle_nums{k}).v(ii+1),min1(ii,k));            
             stress_min(ii,k) = T * norm_force;        
-            
-            if stress_min(ii,k)<0;
-                1;
-            end
-            
+                        
             [ T ] = Fl_Fv_for(muscles.(muscle_nums{k}).norm_length(ii+1)...
                 ,muscles.(muscle_nums{k}).v(ii+1),max1(ii,k));            
             stress_max(ii,k) = T * norm_force;
-            if k == 6 && ii == 76
-                1;
-            end
         end
     end
 end
 
+% Calculate nerual drive.
 for k=1:length(muscle_nums)
     [u.(muscle_nums{k}),est.(muscle_nums{k}),t,tnew.(muscle_nums{k})] = ...
     calc_drive(act.(muscle_nums{k}),vars.time_inc);
