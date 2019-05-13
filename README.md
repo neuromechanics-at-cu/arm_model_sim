@@ -7,7 +7,8 @@ This  code will allow users to quickly and easily run a simulation of a two link
 
 # Main files
 ## Example.m
-A short file that shows what inputs to specify with the model and how to call the model using the funciton single_sim.m
+A short file that shows what inputs to specify with the model and how to call the model using the funciton single_sim.m. The inputs for the function are shown below.
+
 
 ## single_sim.m
 The main function is single_sim.m. Call this function with the inputs specified and it will run the single arm reaching simulation.
@@ -18,7 +19,8 @@ The main function is single_sim.m. Call this function with the inputs specified 
 3. Subject height in m. (input.subj_height)
 4. Movment duration of the sim. (input.movedur)
 5. Normalized force parameter in Pa. (input.normforce)
-6. NEED TO ADD START AND TARGET INPUT (future update).
+6. Starting position from shoulder in m. (start_pos)
+7. Relative target position in m. (tar_rel_pos)
 
 ### Outputs
 This function returns all the computed variable in one data structure.
