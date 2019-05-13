@@ -58,8 +58,8 @@ elbow = [];
 theta = [];
 
 % Define the target spots.
-ro = [-.0758,0.4878];
-vars.target = [0,.1];
+ro = input.start_pos;
+vars.target = input.tar_rel_pos;
 rf = [vars.target(1)+ro(1),...
     vars.target(2)+ro(2)];
 
