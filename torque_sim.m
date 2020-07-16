@@ -72,3 +72,43 @@ for ii = 1:length(added_masses)*length(move_durs)*8
     [addedmass,movedur,t] = ind2sub([length(added_masses),length(move_durs),8],ii);
     torque2{addedmass,movedur,t} = torque_data{ii};
 end
+
+%% Write the data
+
+excel_file = 'sum_torque2.csv';
+fileID=fopen(excel_file,'w');
+
+delcount=0;
+
+A={'move_dur,'...
+   'added_mass,'...
+   'target,'...
+   'eff_mass,'...
+   'eff_mass_mean,'...
+   'sum_t2'...
+   };
+
+fprintf(fileID,'%s',A{:});
+fprintf(fileID,'\n');
+for addedmass = 1:length(added_masses)
+   for movedur = 1:length(move_durs)
+       for t = 1:8
+           data = torque2{addedmass,movedur,t};
+           tar_avg = 0;
+           
+            if ~isempty(data)
+                A={data.move_dur,...
+                   data.added_mass,...
+                   t,...
+                   data.eff_mass(1),...
+                   mean(data.eff_mass),...
+                   data.torque2};
+                    dlmwrite(excel_file,A,'-append')
+            end
+        end
+    end
+end
+
+fclose(fileID);
+
+
