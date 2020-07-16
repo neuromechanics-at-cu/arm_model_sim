@@ -52,10 +52,6 @@ upperarm.l_com = 0.436*upperarm.length;
 upperarm.centl = 0.436*upperarm.length;
 upperarm.mass = 0.028*sim_input.subj_mass; %kg
 upperarm.Ic = .0141;
-
-out.upperarm = upperarm;
-out.forearm = forearm;
-
 shoulder = [];
 elbow = [];
 theta = [];
@@ -77,6 +73,10 @@ Data.startposition  = ro;
 
 % Simulate
 out = looper2(Data,forearm,upperarm,vars);
+
+out.upperarm = upperarm;
+out.forearm = forearm;
+
 out.x = Data.x;
 out.y = Data.y;
 end

@@ -74,7 +74,7 @@ for ii = 1:length(added_masses)*length(move_durs)*8
 end
 
 %% Write the data
-
+fprintf('Writing data to excel.\n')
 excel_file = 'sum_torque2.csv';
 fileID=fopen(excel_file,'w');
 

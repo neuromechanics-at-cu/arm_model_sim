@@ -1,117 +1,36 @@
-% function [elbow{c,subj,s,t},muscles{c,subj,s,t},theta{c,subj,s,t}] = Animate(elbow{c,subj,s,t},...
-%     shoulder{c,subj,s,t},muscles{c,subj,s,t},theta{c,subj,s,t},upperarm{c,subj,s,t},forearm{c,subj,s,t})
+%% Animation
+% Created by: Gary Bruening
+% Edited:     7/16/2020
+% 
+% Used to animate the arm motion, I mainly use for checking.
+% Need to run the torque sim first.
+% Then decide the addedmass, movedur, and t you want to plot.
 
-subj = 1;
-c = 1;
-s = 1;
-muscle_nums = {'an','bs','br','da','dp','pc','bb','tb'};
+%%
+plot_data = torque2{addedmass,movedur,t};
+sim_input_plot = sim_input{addedmass,movedur,t};
+upperarm = plot_data.upperarm;
+forearm = plot_data.forearm;
 
 figure(7);clf(7);
-for c=4:4
-    for s=2:5
-        for t = 1:8
-            for d = 2:2
-            figure(5);clf(5); hold on;
-            for k = 1:length(muscle_nums)
-                plot(muscles{c,subj,s,t}.(muscle_nums{k}).force);
-            end
-            legend(muscle_nums);
-            drawnow;
-for ii = 1:3:length(elbow{c,subj,s,t}.torque(:))
-%     
-% %     if sum(elbow{c,subj,s,t}.torque(ii:ii+20))==0 & sum(shoulder{c,subj,s,t}.torque(ii:ii+20))==0
-% %         break        
-% %     end
+for ii = 1:3:length(plot_data.elbow.torque(:))
     figure(7);clf(7);hold on;
     axis([-.3 .3 -.1 .7]);
-% %     maxforce = max([max(muscles{c,subj,s,t}.one.force(:)),max(muscles{c,subj,s,t}.two.force(:)),max(muscles{c,subj,s,t}.thr.force(:)),...
-% %         max(muscles{c,subj,s,t}.fou.force(:)),max(muscles{c,subj,s,t}.fiv.force(:)),max(muscles{c,subj,s,t}.six.force(:))]);
-%     
-    viscircles(ro,vars{c,subj,s,t}.distances(d));
-    plot(Data{c,subj,s,t}.startposition(1),Data{c,subj,s,t}.startposition(2)+.4,'*');
-    plot(Data{c,subj,s,t}.targetposition(1),Data{c,subj,s,t}.targetposition(2),'x','Color','b');
-    plot(Data{c,subj,s,t}.x(ii),Data{c,subj,s,t}.y(ii),'o');
+    viscircles([sim_input_plot.start_pos(1),sim_input_plot.start_pos(2)],.1);
+    plot(sim_input_plot.start_pos(1),sim_input_plot.start_pos(2),'*');
+    plot(sim_input_plot.tar_rel_pos(1)+sim_input_plot.start_pos(1),sim_input_plot.tar_rel_pos(2)+sim_input_plot.start_pos(2),'x','Color','b');
+    plot(plot_data.x(ii),plot_data.y(ii),'o');
     
-    % Plot upperarm{c,subj,s,t}
-    plot([0,cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length],[0,sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length],...
+    % Plot upperarm
+    plot([0,cos(plot_data.theta.S(ii))*plot_data.upperarm.length],[0,sin(plot_data.theta.S(ii))*plot_data.upperarm.length],...
         'linewidth',3,'color','k');
     
-    % Plot forearm{c,subj,s,t}
-    plot([cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length,...
-        cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+cos(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii))*forearm{c,subj,s,t}.length],...
-        [sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length,...
-        sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+sin(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii))*forearm{c,subj,s,t}.length],...
+    % Plot forearm
+    plot([cos(plot_data.theta.S(ii))*upperarm.length,...
+        cos(plot_data.theta.S(ii))*upperarm.length+cos(plot_data.theta.E(ii)+plot_data.theta.S(ii))*forearm.length],...
+        [sin(plot_data.theta.S(ii))*upperarm.length,...
+        sin(plot_data.theta.S(ii))*upperarm.length+sin(plot_data.theta.E(ii)+plot_data.theta.S(ii))*forearm.length],...
         'linewidth',3,'color','k');
     drawnow;
-%     
-%     % Plot a small eblow extender
-%     plot([cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length,...
-%         cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+cos(theta{c,subj,s,t}.S(ii)+theta{c,subj,s,t}.E(ii)+pi)*abs(muscles{c,subj,s,t}.six.m_arm_e(ii))],...
-%         [sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length,...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+sin(theta{c,subj,s,t}.S(ii)+theta{c,subj,s,t}.E(ii)+pi)*abs(muscles{c,subj,s,t}.six.m_arm_e(ii))],...
-%         'linewidth',3,'color','k');
-%     
-%     viscircles([cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length,...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length],muscles{c,subj,s,t}.one.m_arm(ii),...
-%         'color','k');    
-%     viscircles([0,0],muscles{c,subj,s,t}.thr.m_arm(ii),'color','k');
-%     
-%     % Plot muscle1
-%     plot([cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.75,...
-%         cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+cos(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii))*muscles{c,subj,s,t}.one.m_arm(ii)],...
-%         [sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.75,...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+sin(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii))*muscles{c,subj,s,t}.one.m_arm(ii)],...
-%         'linewidth',3,'color',[act{c,subj,s,t}.one(ii),0,(1-act{c,subj,s,t}.one(ii))]);
-%     
-%     % Plot Muscle 2
-%     plot([cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.75,...
-%         cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+cos(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii)+pi)*abs(muscles{c,subj,s,t}.two.m_arm(ii))],...
-%         [sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.75,...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+sin(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii)+pi)*abs(muscles{c,subj,s,t}.two.m_arm(ii))],...
-%         'linewidth',3,'color',[act{c,subj,s,t}.two(ii),0,(1-act{c,subj,s,t}.two(ii))]);
-%     
-%     % Plot Muscle 3
-%     plot([cos(theta{c,subj,s,t}.S(ii)+pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.25],...
-%         [sin(theta{c,subj,s,t}.S(ii)+pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.25],...
-%         'linewidth',3,'color',[act{c,subj,s,t}.thr(ii),0,(1-act{c,subj,s,t}.thr(ii))]);
-%     
-%     % Plot Muscle 4
-%     plot([cos(theta{c,subj,s,t}.S(ii)-pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.25],...
-%         [sin(theta{c,subj,s,t}.S(ii)-pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length*.25],...
-%         'linewidth',3,'color',[act{c,subj,s,t}.fou(ii),0,(1-act{c,subj,s,t}.fou(ii))]);
-%     
-%     % Plot Muscle 5
-%     plot([cos(theta{c,subj,s,t}.S(ii)+pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+cos(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii))*muscles{c,subj,s,t}.fiv.m_arm_s(ii)],...
-%         [sin(theta{c,subj,s,t}.S(ii)+pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+sin(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii))*muscles{c,subj,s,t}.fiv.m_arm_e(ii)],...
-%         'linewidth',3,'color',[act{c,subj,s,t}.fiv(ii),0,(1-act{c,subj,s,t}.fiv(ii))]);
-%     
-%     % Plot Muscle 6
-%     plot([cos(theta{c,subj,s,t}.S(ii)-pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         cos(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+cos(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii)+pi)*muscles{c,subj,s,t}.fiv.m_arm_s(ii)],...
-%         [sin(theta{c,subj,s,t}.S(ii)-pi/2)*muscles{c,subj,s,t}.thr.m_arm(ii),...
-%         sin(theta{c,subj,s,t}.S(ii))*upperarm{c,subj,s,t}.length+sin(theta{c,subj,s,t}.E(ii)+theta{c,subj,s,t}.S(ii)+pi)*muscles{c,subj,s,t}.fiv.m_arm_e(ii)],...
-%         'linewidth',3,'color',[act{c,subj,s,t}.six(ii),0,(1-act{c,subj,s,t}.six(ii))]);
-%     
-%     drawnow;
     
-%     figure(6);clf(6);hold on
-%     plot(muscles{c,subj,s,t}.one.force(1:ii),'linewidth',3)
-%     plot(muscles{c,subj,s,t}.two.force(1:ii),'linewidth',3)
-%     plot(muscles{c,subj,s,t}.thr.force(1:ii),'linewidth',3)
-%     plot(muscles{c,subj,s,t}.fou.force(1:ii),'linewidth',3)
-%     plot(muscles{c,subj,s,t}.fiv.force(1:ii),'linewidth',3)
-%     plot(muscles{c,subj,s,t}.six.force(1:ii),'linewidth',3)
-%     legend({'one','two','thr','fou','fiv','six'})
-%     drawnow;
-    
- end
-            end
-        end
-    end
 end
