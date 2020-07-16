@@ -14,5 +14,7 @@ function [out] = looper2( Data, forearm , upperarm, vars)
     out.elbow    = elbow;
     out.theta    = theta;
     out.eff_mass = eff_mass;
+    
+    out.torque2 = sum(out.shoulder.torque.^2)+sum(out.shoulder.torque.^2);
 end
 

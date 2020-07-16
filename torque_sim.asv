@@ -1,51 +1,67 @@
+%% Torque Sim
+% Created by: Gary Bruening
+% Edited:     7/16/2020
+% 
+% The purpose of this script is to simulate minimum jerk and calculate sum
+% of torque squared for a variety of reaching movements. This is to find
+% how usm of torque squared changes with mass and movement duration in the
+% effort model.
 
-input.added_mass  = 0;
-input.subj_mass   = 60; % in kg
-input.subj_height = 1.75; % in m
-input.movedur     = 1;
-input.normforce   = 200E4;
-input.start_pos   = [-.0758,0.4878]; % Starting location in m
-input.tar_rel_pos = [0.0707, 0.0707]; % Relative Target position in m
-
-output = single_sim(input);
+%%
+clear
 
 mass_count = 0;
-for added_mass = 0:.5:10
-   mass_count = mass_count+1;
-   dur_count = 0;
-   for movedur = .3:.05:2
-       
+added_mass = 0:.5:10;
+move_dur = .3:.05:2;
+
+for addedmass = 1:length(added_mass)
+   for movedur = 1:length(move_dur)
        for t = 1:8
-           input.added_mass = added_mass;
-           input.movedur    = movedur;
            
+            sim_input{addedmass,movedur,t}.added_mass  = 0;
+            sim_input{addedmass,movedur,t}.subj_mass   = 60; % in kg
+            sim_input{addedmass,movedur,t}.subj_height = 1.75; % in m
+            sim_input{addedmass,movedur,t}.movedur     = 1;
+            sim_input{addedmass,movedur,t}.normforce   = 200E4;
+            sim_input{addedmass,movedur,t}.start_pos   = [-.0758,0.4878]; % Starting location in m
+            sim_input{addedmass,movedur,t}.tar_rel_pos = [0.0707, 0.0707]; % Relative Target position in m
+
+            sim_input{addedmass,movedur,t}.added_mass = added_masses;
+            sim_input{addedmass,movedur,t}.movedur    = movedurs;
+            center = [-.0758,0.4878];
+
             switch t
-                case 1
-                    input.tar_rel_pos = [.0707 .0707];
-                    input.start_pos = [-.0758,0.4878];
-                case 2
-                    input.tar_rel_pos = [-.0707 .0707];
-                    input.start_pos = [-.0758,0.4878];
-                case 3
-                    input.tar_rel_pos = [-.0707 -.0707];
-                    input.start_pos = [-.0758,0.4878];
-                case 4
-                    input.tar_rel_pos = [.0707 -.0707];
-                    input.start_pos = [-.0758,0.4878];
-                case 5
-                    input.start_pos = [.0707 .0707]+center;
-                    input.tar_rel_pos = [-.0707 -.0707];
-                case 6
-                    input.start_pos = [-.0707 .0707]+center;
-                    input.tar_rel_pos = [.0707 -.0707];
-                case 7
-                    input.start_pos = [-.0707 -.0707]+center;
-                    input.tar_rel_pos = [.0707 .0707];
-                case 8
-                    input.start_pos = [.0707 -.0707]+center;
-                    input.tar_rel_pos = [-.0707 .0707];
+               case 1
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [.0707 .0707];
+                   sim_input{addedmass,movedur,t}.start_pos = [-.0758,0.4878];
+               case 2
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [-.0707 .0707];
+                   sim_input{addedmass,movedur,t}.start_pos = [-.0758,0.4878];
+               case 3
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [-.0707 -.0707];
+                   sim_input{addedmass,movedur,t}.start_pos = [-.0758,0.4878];
+               case 4
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [.0707 -.0707];
+                   sim_input{addedmass,movedur,t}.start_pos = [-.0758,0.4878];
+               case 5
+                   sim_input{addedmass,movedur,t}.start_pos = [.0707 .0707]+center;
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [-.0707 -.0707];
+               case 6
+                   sim_input{addedmass,movedur,t}.start_pos = [-.0707 .0707]+center;
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [.0707 -.0707];
+               case 7
+                   sim_input{addedmass,movedur,t}.start_pos = [-.0707 -.0707]+center;
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [.0707 .0707];
+               case 8
+                   sim_input{addedmass,movedur,t}.start_pos = [.0707 -.0707]+center;
+                   sim_input{addedmass,movedur,t}.tar_rel_pos = [-.0707 .0707];
             end
-            output{added_mass,movedur,t} = single_sim(input);
        end
    end
+end
+
+parfor ii = 1:length(added_mass)*length(move_dur)*8
+    [c,subj,s,t] = ind2sub([length(added_mass),length(move_dur),8],ii);
+    torque_data{ii} = ...
+        single_sim(sim_input{addedmass,movedur,t});
 end
