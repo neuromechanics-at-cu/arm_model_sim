@@ -26,31 +26,31 @@
 % may break fmincon in the time increment is to low.
 
 %%
-function [out] = single_sim(input)
+function [out] = single_sim(sim_input)
 
 % Initialize some variables. 
-vars.masses = input.added_mass;
+vars.masses = sim_input.added_mass;
 vars.rnjesus = 0;
 vars.time_inc = 0.0050;
-vars.speeds = input.movedur; % Movement Duration
-vars.norm_force = input.normforce;
+vars.speeds = sim_input.movedur; % Movement Duration
+vars.norm_force = sim_input.normforce;
 vars.minparam = 'drive2';
 
 % Create the arm segments.
-forearm.mass = 0.022*input.subj_mass;%;+2*vars{c,subj,s,t}.masses(c);
-forearm.length = (0.632-0.425)*input.subj_height; % meters, taken from An iterative optimal control and estimation design for nonlinear stochastic system
+forearm.mass = 0.022*sim_input.subj_mass;%;+2*vars{c,subj,s,t}.masses(c);
+forearm.length = (0.632-0.425)*sim_input.subj_height; % meters, taken from An iterative optimal control and estimation design for nonlinear stochastic system
 forearm.l_com = 0.682*forearm.length;
 
-forearm.l_com = (.417*(.632-.480)*input.subj_height*.016*input.subj_mass +...
-        ((.632-.480)*input.subj_height+.515*((.480-.370)/2)*input.subj_height)*.006*input.subj_mass)/...
-        (.016*input.subj_mass+.006*input.subj_mass); % Using Enoka
+forearm.l_com = (.417*(.632-.480)*sim_input.subj_height*.016*sim_input.subj_mass +...
+        ((.632-.480)*sim_input.subj_height+.515*((.480-.370)/2)*sim_input.subj_height)*.006*sim_input.subj_mass)/...
+        (.016*sim_input.subj_mass+.006*sim_input.subj_mass); % Using Enoka
     
 [forearm] = calc_forearmI(forearm,vars.masses);
 
-upperarm.length = (0.825-0.632)*input.subj_height; % meters
+upperarm.length = (0.825-0.632)*sim_input.subj_height; % meters
 upperarm.l_com = 0.436*upperarm.length;
 upperarm.centl = 0.436*upperarm.length;
-upperarm.mass = 0.028*input.subj_mass; %kg
+upperarm.mass = 0.028*sim_input.subj_mass; %kg
 upperarm.Ic = .0141;
 
 shoulder = [];
@@ -58,8 +58,8 @@ elbow = [];
 theta = [];
 
 % Define the target spots.
-ro = input.start_pos;
-vars.target = input.tar_rel_pos;
+ro = sim_input.start_pos;
+vars.target = sim_input.tar_rel_pos;
 rf = [vars.target(1)+ro(1),...
     vars.target(2)+ro(2)];
 

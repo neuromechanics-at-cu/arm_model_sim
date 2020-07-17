@@ -32,5 +32,9 @@ This function returns all the computed variable in one data structure.
 6. u - Neural Drive to those muscles
 7. est - Estimated active state from u, used for checking.
 8. tnew - New time array that goes with est.
-9. energy - Energetics estimates
-10. eff_mass - Effective mass array.
+9. umber - [Umberger Energetics estimates](https://royalsocietypublishing.org/doi/10.1098/rsif.2010.0084)
+10. bhar - [Bhargava Energetics estimates](https://www.sciencedirect.com/science/article/pii/S0021929003002392?casa_token=PR8Lc_kEddwAAAAA:CR5WxV07adqbaVxhwBgPTiyiyW5cC9QrlYIv5w7dEbg5Pr8o20DC5SoUbD8NaArcGhC-R62nWLY)
+11. uch - [Uchida Energetics estimates](https://dx.plos.org/10.1371/journal.pone.0150378)
+12. lich - [Lichtwark Energetics estimates](https://jeb.biologists.org/content/208/15/2831)
+13. marg - [Margaria Energetics estimates](https://doi.org/10.1007/BF00699624)
+15. eff_mass - Effective mass array.
