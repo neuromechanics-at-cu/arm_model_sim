@@ -11,8 +11,8 @@
 % clear
 
 mass_count = 0;
-added_masses = 1;
-move_durs = 1;
+added_masses = (0:.5:20);
+move_durs = (.2:.05:2);
 
 for addedmass = 1:length(added_masses)
    for movedur = 1:length(move_durs)
