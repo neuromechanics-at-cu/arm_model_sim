@@ -8,11 +8,11 @@
 % effort model.
 
 %%
-clear
+% clear
 
 mass_count = 0;
-added_masses = 0:.5:10;
-move_durs = .3:.05:2;
+added_masses = 1;
+move_durs = 1;
 
 for addedmass = 1:length(added_masses)
    for movedur = 1:length(move_durs)
@@ -60,7 +60,7 @@ for addedmass = 1:length(added_masses)
    end
 end
 
-parfor ii = 1:length(added_masses)*length(move_durs)*8
+for ii = 1:length(added_masses)*length(move_durs)*8
     [addedmass,movedur,t] = ind2sub([length(added_masses),length(move_durs),8],ii);
     torque_data{ii} = ...
         single_sim(sim_input{addedmass,movedur,t});

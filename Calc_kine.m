@@ -42,11 +42,14 @@ s1 = diff23f5(theta.S,time_inc,3);
 e1 = diff23f5(theta.E,time_inc,3);
 theta.Sd = s1(:,2);
 theta.Ed = e1(:,2);
-theta.Sd(2) = (theta.Sd(1)+theta.Sd(3))/2;
-theta.Ed(2) = (theta.Ed(1)+theta.Ed(3))/2;
+theta.Sdd = s1(:,3);
+theta.Edd = e1(:,3);
 
 % UNCOMMMENT this section if you want to do some smoothing at the beginning
 % of movements when using resampled data.
+
+% theta.Sd(2) = (theta.Sd(1)+theta.Sd(3))/2;
+% theta.Ed(2) = (theta.Ed(1)+theta.Ed(3))/2;
 % esp = 16;
 % theta.Sd = [interp1([1 2 esp-2:esp'], [0 0 theta.Sd(esp-2:esp)'], [1:esp], 'spline')';...
 %     theta.Sd(esp+1:end)];
