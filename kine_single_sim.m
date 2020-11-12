@@ -65,7 +65,7 @@ rf = [vars.target(1)+ro(1),...
 
 % If you have resampled data to simulate, use Gen_mvt_gb. Otherwise just
 % use the minimum jerk.
-[Data] = Gen_mvt_gb(Resamp,c,subj,s,t,ro,rf,vars{c,subj,s,t}.time_inc);
+[Data] = Gen_mvt_gb(sim_input.Resamp,ro,rf,vars.time_inc);
 
 % Create movement trajectory using minimum jerk.
 % Data = minjerk(ro,rf,vars.speeds,vars.time_inc);

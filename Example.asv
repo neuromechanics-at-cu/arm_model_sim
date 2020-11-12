@@ -18,10 +18,9 @@ input.normforce   = 200E4;
 input.start_pos   = [-.0758,0.4878]; % Starting location in m from shoulder
 input.tar_rel_pos = [0.0707, 0.0707]; % Relative Target position in m
 load('Resamp_data_Nov2020.mat');
-input.Resamp.X      = squeeze(Resamp.X(2,3,3,1,:));
-input.Resamp.Y      = squeeze(Resamp.Y(2,3,3,1,:));
-input.Resamp.T      = squeeze(Resamp.T(2,3,3,1,:));
+input.Resamp.X      = Resamp.X{2,3,3,1};
+input.Resamp.Y      = Resamp.Y{2,3,3,1};
 
-output = kine_single_sim(input);
+output = minjerk_single_sim(input);
 
 
