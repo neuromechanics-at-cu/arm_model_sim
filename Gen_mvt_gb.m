@@ -1,10 +1,15 @@
 function[Data]=Gen_mvt_gb(Resamp,c,subj,s,t, ro, rf, time_inc)
 
 re_size = length(squeeze(Resamp.P(c,subj,s,t,:)));
-
-x = reshape(((Resamp.P(c,subj,s,t,:)-Resamp.P(c,subj,s,t,1))/max(Resamp.P(c,subj,s,t,:)))*(rf(1)-ro(1)),re_size,1)+ro(1);
-y = reshape(((Resamp.P(c,subj,s,t,:)-Resamp.P(c,subj,s,t,1))/max(Resamp.P(c,subj,s,t,:)))*(rf(2)-ro(2)),re_size,1)+ro(2);
-
+if isfield(Resamp,'X')
+    x = reshape(Resamp.X(c,subj,s,t,:)-Resamp.X(c,subj,s,t,1),re_size,1)+ro(1);
+    y = reshape(Resamp.Y(c,subj,s,t,:)-Resamp.Y(c,subj,s,t,1),re_size,1)+ro(2);
+elseif isfield(Resamp,'P')
+    x = reshape(((Resamp.P(c,subj,s,t,:)-Resamp.P(c,subj,s,t,1))/max(Resamp.P(c,subj,s,t,:)))*(rf(1)-ro(1)),re_size,1)+ro(1);
+    y = reshape(((Resamp.P(c,subj,s,t,:)-Resamp.P(c,subj,s,t,1))/max(Resamp.P(c,subj,s,t,:)))*(rf(2)-ro(2)),re_size,1)+ro(2);
+else
+    error('No X or P field in resamp data.')
+end
 buff = 0.01;
 
 x1 = spline([0,.0025,reshape(buff+Resamp.T(c,subj,s,t,4:end),1,length(Resamp.T(c,subj,s,t,4:end)))],...
